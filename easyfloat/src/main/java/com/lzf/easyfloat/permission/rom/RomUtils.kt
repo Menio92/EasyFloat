@@ -16,15 +16,30 @@ import java.io.InputStreamReader
 object RomUtils {
     private const val TAG = "RomUtils--->"
 
+    internal fun parseEmuiVersion(emuiVersion: String?): Double {
+        val normalizedVersion = emuiVersion
+            ?.substringAfter("_", emuiVersion ?: "")
+            ?.trim()
+            .orEmpty()
+
+        if (normalizedVersion.isEmpty()) return 4.0
+
+        val numericPart = normalizedVersion
+            .replace(Regex("[^\\d.]"), "")
+            .split(".")
+            .take(2)
+            .joinToString(".")
+
+        return numericPart.toDoubleOrNull() ?: 4.0
+    }
+
     /**
      * 获取 emui 版本号
      */
     @JvmStatic
     fun getEmuiVersion(): Double {
         try {
-            val emuiVersion = getSystemProperty("ro.build.version.emui")
-            val version = emuiVersion!!.substring(emuiVersion.indexOf("_") + 1)
-            return version.toDouble()
+            return parseEmuiVersion(getSystemProperty("ro.build.version.emui"))
         } catch (e: Exception) {
             e.printStackTrace()
         }
